@@ -1,0 +1,52 @@
+#include <U8g2lib.h>
+
+U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
+
+int switchPin = 2; // switch is connected to pin 2
+int potPin = 34; // potentiometer is connected to pin 34
+int state = 0; // 0 for timer, 1 for voltmeter
+
+void setup() {
+  pinMode(switchPin, INPUT);
+  u8g2.begin();
+}
+
+void loop() {
+  state = digitalRead(switchPin);
+  u8g2.clearBuffer();
+  if (state == 0) {
+    displayTimer();
+  } else {
+    displayVoltmeter();
+  }
+  u8g2.sendBuffer();
+  delay(1000);
+}
+
+void displayTimer() {
+  unsigned long time = millis();
+  int seconds = time / 1000;
+  int minutes = seconds / 60;
+  seconds = seconds % 60;
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  u8g2.setCursor(0, 10);
+  u8g2.print("Timer: ");
+  if (minutes < 10) u8g2.print('0');
+  u8g2.print(minutes);
+  u8g2.print(":");
+  if (seconds < 10) u8g2.print('0');
+  u8g2.println(seconds);
+  u8g2.setCursor(0, 30);
+  u8g2.print("Student ID: ");
+  u8g2.println("12345678"); // replace with your student ID
+}
+
+void displayVoltmeter() {
+  int sensorValue = analogRead(potPin);
+  float voltage = sensorValue * (3.3 / 4095.0);
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  u8g2.setCursor(0, 10);
+  u8g2.print("Voltage: ");
+  u8g2.print(voltage);
+  u8g2.println(" V");
+}
