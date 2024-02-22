@@ -3,7 +3,7 @@
 U8GLIB_SH1106_128X64 u8g(U8G_I2C_OPT_NONE);  // I2C / TWI 
 
 int switchPin = 2; // switch is connected to pin 2
-int potPin = 34; // potentiometer is connected to pin 34
+int joystickPin = 34; // joystick is connected to pin 34
 int state = 0; // 0 for timer, 1 for voltmeter
 
 void setup() {
@@ -53,7 +53,7 @@ void displayVoltmeter() {
 }
 
 void drawVoltmeter() {
-  int sensorValue = analogRead(potPin);
+  int sensorValue = analogRead(joystickPin);
   float voltage = sensorValue * (3.3 / 4095.0);
   u8g.setFont(u8g_font_unifont);
   u8g.setPrintPos(0, 20);
