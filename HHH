@@ -1,63 +1,32 @@
-#include <U8glib.h>
+#include <Wire.h>
+#include <U8g2lib.h>
 
-U8GLIB_SH1106_128X64 u8g(U8G_I2C_OPT_NONE);  // I2C / TWI 
+// 設定OLED
+//OLED顯示器使用2C連線並宣告名為display物件
+//U8G2_SSD1306_128X32_UNIVISION_1_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE, /* clock=*/ SCL, /* data=*/ SDA);   // pin remapping with ESP8266 HW I2C
+U8G2_SH1106_128X64_NONAME_1_HW_I2C u8g2(U8G2_R0, /* reset=*/U8X8_PIN_NONE);
 
-int switchPin = 2; // switch is connected to pin 2
-int joystickPin = 34; // joystick is connected to pin 34
-int state = 0; // 0 for timer, 1 for voltmeter
+void testdrawstyles(void) {
+  u8g2.firstPage(); 
+  do {
+    u8g2.setFont(u8g2_font_8x13_tf); // 使用 8*13 字型
+    u8g2.setCursor(25, 10); // 設定起始座標
+    u8g2.print("Hello OLED"); // 要顯示的字串
+    u8g2.setCursor(25, 50); // 設定起始座標
+    u8g2.setFont(u8g2_font_spleen16x32_me); // 使用 16*32 字型
+    u8g2.printf("%s", "SAIHS"); // 要顯示的字串
+    // 如果不支援 printf，請改用下列方法
+    // char buf[10]; 
+    // sprintf(buf,"%s","SAIHS");
+    // u8g2.print(buf);
+  } while (u8g2.nextPage());
+  delay(1000);
+}
 
 void setup() {
-  pinMode(switchPin, INPUT);
+  u8g2.begin(); // 使用 OLED了
+  testdrawstyles(); // 測試文字
+  delay(1000);
 }
 
-void loop() {
-  state = digitalRead(switchPin);
-  if (state == 0) {
-    displayTimer();
-  } else {
-    displayVoltmeter();
-  }
-  delay(60 * 1000); // delay for 1 minute
-}
-
-void displayTimer() {
-  u8g.firstPage();  
-  do {
-    drawTimer();
-  } while( u8g.nextPage() );
-}
-
-void drawTimer() {
-  unsigned long time = millis();
-  int seconds = time / 1000;
-  int minutes = seconds / 60;
-  seconds = seconds % 60;
-  u8g.setFont(u8g_font_unifont);
-  u8g.setPrintPos(0, 20);
-  u8g.print("Timer: ");
-  if (minutes < 10) u8g.print('0');
-  u8g.print(minutes);
-  u8g.print(":");
-  if (seconds < 10) u8g.print('0');
-  u8g.println(seconds);
-  u8g.setPrintPos(0, 40);
-  u8g.print("Student ID: ");
-  u8g.println("12345678"); // replace with your student ID
-}
-
-void displayVoltmeter() {
-  u8g.firstPage();  
-  do {
-    drawVoltmeter();
-  } while( u8g.nextPage() );
-}
-
-void drawVoltmeter() {
-  int sensorValue = analogRead(joystickPin);
-  float voltage = sensorValue * (3.3 / 4095.0);
-  u8g.setFont(u8g_font_unifont);
-  u8g.setPrintPos(0, 20);
-  u8g.print("Voltage: ");
-  u8g.print(voltage);
-  u8g.println(" V");
-}
+void loop() {}
