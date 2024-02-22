@@ -1,6 +1,7 @@
-#include <U8glib.h>
+#include <U8g2lib.h>
+#include <Wire.h>
 
-U8GLIB_SH1106_128X64 u8g(U8G_I2C_OPT_NONE);  // I2C / TWI 
+U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 
 int switchPin = 2; // 滑動開關的腳位
 int potPin = A0; // 可變電阻的腳位
@@ -9,11 +10,12 @@ unsigned long timer = 0; // 計時器
 int minutes = 0; // 分鐘
 int seconds = 0; // 秒數
 
-void setup(void) {
+void setup() {
   pinMode(switchPin, INPUT);
+  u8g2.begin();
 }
 
-void loop(void) {
+void loop() {
   switchState = digitalRead(switchPin);
   if (switchState == HIGH) {
     displayTimer();
@@ -23,14 +25,13 @@ void loop(void) {
 }
 
 void displayTimer() {
-  u8g.firstPage();  
-  do {
-    u8g.setFont(u8g_font_unifont);
-    char timerText[6];
-    sprintf(timerText, "%02d:%02d", minutes, seconds);
-    u8g.drawStr(32, 30, timerText);
-    u8g.drawStr(10, 60, "YOUR_STUDENT_ID"); // 將 YOUR_STUDENT_ID 替換成你的學號
-  } while( u8g.nextPage() );
+  u8g2.clearBuffer();
+  u8g2.setFont(u8g2_font_ncenB14_tr);
+  char timerText[6];
+  sprintf(timerText, "%02d:%02d", minutes, seconds);
+  u8g2.drawStr(32, 30, timerText);
+  u8g2.drawStr(10, 60, "YOUR_STUDENT_ID"); // 將 YOUR_STUDENT_ID 替換成你的學號
+  u8g2.sendBuffer();
   if (millis() - timer >= 1000) {
     timer = millis();
     seconds++;
@@ -42,13 +43,12 @@ void displayTimer() {
 }
 
 void displayVoltage() {
-  u8g.firstPage();  
-  do {
-    u8g.setFont(u8g_font_unifont);
-    int sensorValue = analogRead(potPin);
-    float voltage = map(sensorValue, 0, 1023, 0, 5);
-    char voltageText[6];
-    sprintf(voltageText, "%.2f V", voltage);
-    u8g.drawStr(32, 30, voltageText);
-  } while( u8g.nextPage() );
+  u8g2.clearBuffer();
+  u8g2.setFont(u8g2_font_ncenB14_tr);
+  int sensorValue = analogRead(potPin);
+  float voltage = map(sensorValue, 0, 1023, 0, 5);
+  char voltageText[6];
+  sprintf(voltageText, "%.2f V", voltage);
+  u8g2.drawStr(32, 30, voltageText);
+  u8g2.sendBuffer();
 }
