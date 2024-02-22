@@ -1,54 +1,48 @@
+#include <Arduino.h>
 #include <U8g2lib.h>
+
+#ifdef U8X8_HAVE_HW_SPI
+#include <SPI.h>
+#endif
+#ifdef U8X8_HAVE_HW_I2C
 #include <Wire.h>
+#endif
 
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 
-int switchPin = 2; // 滑動開關的腳位
-int potPin = A0; // 可變電阻的腳位
-int switchState = 0; // 滑動開關的狀態
-unsigned long timer = 0; // 計時器
-int minutes = 0; // 分鐘
-int seconds = 0; // 秒數
+unsigned long pms;
+int m = 0,s = 0;
 
-void setup() {
-  pinMode(switchPin, INPUT);
+
+void setup(void) {
   u8g2.begin();
+  pms += millis();
 }
 
-void loop() {
-  switchState = digitalRead(switchPin);
-  if (switchState == HIGH) {
-    displayTimer();
-  } else {
-    displayVoltage();
-  }
+void loop(void) {
+  func1();
 }
 
-void displayTimer() {
-  u8g2.clearBuffer();
-  u8g2.setFont(u8g2_font_ncenB14_tr);
-  char timerText[6];
-  sprintf(timerText, "%02d:%02d", minutes, seconds);
-  u8g2.drawStr(32, 30, timerText);
-  u8g2.drawStr(10, 60, "YOUR_STUDENT_ID"); // 將 YOUR_STUDENT_ID 替換成你的學號
-  u8g2.sendBuffer();
-  if (millis() - timer >= 1000) {
-    timer = millis();
-    seconds++;
-    if (seconds >= 60) {
-      seconds = 0;
-      minutes++;
+void func1(void) {
+    if (millis() - pms > 1000) {
+    pms += 1000;
+    u8g2.firstPage();
+    do {
+      u8g2.setFont(u8g2_font_8x13_tf);
+      u8g2.setCursor(5, 10);
+      u8g2.print("Func 1.");
+      u8g2.setCursor(5, 63);
+      u8g2.print("11101136");
+      u8g2.setCursor(15, 45);
+      u8g2.setFont(u8g2_font_spleen16x32_me);
+      u8g2.printf("%02d:%02d", m,s);
+
+    } while (u8g2.nextPage());
+
+    s++;
+    if (s>59) {
+      m++;
+      s=0;
     }
-  }
-}
-
-void displayVoltage() {
-  u8g2.clearBuffer();
-  u8g2.setFont(u8g2_font_ncenB14_tr);
-  int sensorValue = analogRead(potPin);
-  float voltage = map(sensorValue, 0, 1023, 0, 5);
-  char voltageText[6];
-  sprintf(voltageText, "%.2f V", voltage);
-  u8g2.drawStr(32, 30, voltageText);
-  u8g2.sendBuffer();
+  } 
 }
