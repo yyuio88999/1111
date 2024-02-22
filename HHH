@@ -1,32 +1,54 @@
-#include <Wire.h>
-#include <U8g2lib.h>
+#include <U8glib.h>
 
-// 設定OLED
-//OLED顯示器使用2C連線並宣告名為display物件
-//U8G2_SSD1306_128X32_UNIVISION_1_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE, /* clock=*/ SCL, /* data=*/ SDA);   // pin remapping with ESP8266 HW I2C
-U8G2_SH1106_128X64_NONAME_1_HW_I2C u8g2(U8G2_R0, /* reset=*/U8X8_PIN_NONE);
+U8GLIB_SH1106_128X64 u8g(U8G_I2C_OPT_NONE);  // I2C / TWI 
 
-void testdrawstyles(void) {
-  u8g2.firstPage(); 
+int switchPin = 2; // 滑動開關的腳位
+int potPin = A0; // 可變電阻的腳位
+int switchState = 0; // 滑動開關的狀態
+unsigned long timer = 0; // 計時器
+int minutes = 0; // 分鐘
+int seconds = 0; // 秒數
+
+void setup(void) {
+  pinMode(switchPin, INPUT);
+}
+
+void loop(void) {
+  switchState = digitalRead(switchPin);
+  if (switchState == HIGH) {
+    displayTimer();
+  } else {
+    displayVoltage();
+  }
+}
+
+void displayTimer() {
+  u8g.firstPage();  
   do {
-    u8g2.setFont(u8g2_font_8x13_tf); // 使用 8*13 字型
-    u8g2.setCursor(25, 10); // 設定起始座標
-    u8g2.print("Hello OLED"); // 要顯示的字串
-    u8g2.setCursor(25, 50); // 設定起始座標
-    u8g2.setFont(u8g2_font_spleen16x32_me); // 使用 16*32 字型
-    u8g2.printf("%s", "SAIHS"); // 要顯示的字串
-    // 如果不支援 printf，請改用下列方法
-    // char buf[10]; 
-    // sprintf(buf,"%s","SAIHS");
-    // u8g2.print(buf);
-  } while (u8g2.nextPage());
-  delay(1000);
+    u8g.setFont(u8g_font_unifont);
+    char timerText[6];
+    sprintf(timerText, "%02d:%02d", minutes, seconds);
+    u8g.drawStr(32, 30, timerText);
+    u8g.drawStr(10, 60, "YOUR_STUDENT_ID"); // 將 YOUR_STUDENT_ID 替換成你的學號
+  } while( u8g.nextPage() );
+  if (millis() - timer >= 1000) {
+    timer = millis();
+    seconds++;
+    if (seconds >= 60) {
+      seconds = 0;
+      minutes++;
+    }
+  }
 }
 
-void setup() {
-  u8g2.begin(); // 使用 OLED了
-  testdrawstyles(); // 測試文字
-  delay(1000);
+void displayVoltage() {
+  u8g.firstPage();  
+  do {
+    u8g.setFont(u8g_font_unifont);
+    int sensorValue = analogRead(potPin);
+    float voltage = map(sensorValue, 0, 1023, 0, 5);
+    char voltageText[6];
+    sprintf(voltageText, "%.2f V", voltage);
+    u8g.drawStr(32, 30, voltageText);
+  } while( u8g.nextPage() );
 }
-
-void loop() {}
