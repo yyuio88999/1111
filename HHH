@@ -1,139 +1,66 @@
 #include <Arduino.h>
-#include <U8g2lib.h>
 
-#ifdef U8X8_HAVE_HW_SPI
-#include <SPI.h>
-#endif
-#ifdef U8X8_HAVE_HW_I2C
-#include <Wire.h>
-#endif
-
-U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
-
-unsigned long pms;
-int m = 0,s = 0;
-
+const int SW_pin = 5;  
+#define X_pin 36       
+#define Y_pin 39
 
 void setup(void) {
-  u8g2.begin();
-  pms += millis();
+  pinMode(25, OUTPUT);
+  pinMode(33, OUTPUT);
+  pinMode(27, OUTPUT);
+  pinMode(32, OUTPUT);
+  pinMode(26, OUTPUT);
+  pinMode(SW_pin, INPUT);
+  digitalWrite(SW_pin, HIGH);
+  Serial.begin(9600);
+  pinMode(X_pin, INPUT);
+  pinMode(Y_pin, INPUT);
 }
 
 void loop(void) {
-  func1();
-}
+  int X_value = analogRead(X_pin);
+  int Y_value = analogRead(Y_pin);
+  int SW_value = digitalRead(SW_pin);
 
-void func1(void) {
-    if (millis() - pms > 1000) {
-    pms += 1000;
-    u8g2.firstPage();
-    do {
-      u8g2.setFont(u8g2_font_8x13_tf);
-      u8g2.setCursor(5, 10);
-      u8g2.print("Func 1.");
-      u8g2.setCursor(5, 63);
-      u8g2.print("11101136");
-      u8g2.setCursor(15, 45);
-      u8g2.setFont(u8g2_font_spleen16x32_me);
-      u8g2.printf("%02d:%02d", m,s);
+  Serial.print("X 軸: ");
+  Serial.print(X_value);
+  Serial.print("Y 軸: ");
+  Serial.print(Y_value);
+  Serial.print("按鈕: ");
+  Serial.println(SW_value);
+  
 
-    } while (u8g2.nextPage());
-
-    s++;
-    if (s>59) {
-      m++;
-      s=0;
-    }
-  } 
-}
-
-
-
-
-
-#include <U8g2lib.h>
-#include <Wire.h>
-
-U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
-
-void setup(void) {
-  u8g2.begin();
-  u8g2.clearBuffer();
-
-  u8g2.drawFrame(32, 0, 64, 64);
-  u8g2.drawDisc(64, 32, 32);
-  u8g2.drawLine(32, 0, 96, 64);
-
-  u8g2.sendBuffer();
-}
-
-void loop(void) {
-
-}
+  if (Y_value < 1000) {
+    digitalWrite(27, HIGH);
+  }  
+  else {
+    digitalWrite(27, LOW);
+  }
+  if (X_value < 1000) {
+    digitalWrite(25, HIGH);
+  }
+  else {
+    digitalWrite(25, LOW);
+  }
+  if (X_value > 3600) {
+    digitalWrite(33, HIGH);
+  }
+  else {
+    digitalWrite(33, LOW);
+  }
+  if (Y_value > 3600) {
+    digitalWrite(32, HIGH);
+  }
+  else {
+    digitalWrite(32, LOW);
+  }
 
 
+  if (digitalRead(SW_pin) == HIGH) {
+    digitalWrite(26, HIGH);
+  }
+  else {
+    digitalWrite(26, LOW);
+  }
 
-
-// Arduino pin numbers
-const int SW_pin = 36; // digital pin connected to switch output
-const int X_pin = 34; // analog pin connected to X output
-const int Y_pin = 35; // analog pin connected to Y output
-
-void setup() {
- pinMode(SW_pin, INPUT);
- pinMode(X_pin, INPUT);
- pinMode(Y_pin, INPUT);
- pinMode(15, OUTPUT);  //LED上
- pinMode(2, OUTPUT);   //LED下
- pinMode(4, OUTPUT);   //LED左
- pinMode(16, OUTPUT);   //LED右
- pinMode(17, OUTPUT);   //LED中
- digitalWrite(SW_pin, HIGH);
- Serial.begin(9600);
-}
-
-void loop() {
- Serial.print("Switch: ");
- Serial.print(digitalRead(SW_pin));
- Serial.print(" | ");
- Serial.print("X-axis: ");
- Serial.print(analogRead(X_pin));
- Serial.print(" | ");
- Serial.print("Y-axis: ");
- Serial.print(analogRead(Y_pin));
- Serial.println(" | ");
- delay(1000);
- int XN=analogRead(X_pin);
- int YN=analogRead(Y_pin);
- int SW=digitalRead(SW_pin);
-
- if (YN>=1055 && YN<=1264){  
-    digitalWrite(15,HIGH);
-    digitalWrite(2,LOW);
- }
- else if(YN>=1866 & YN<=4095){
-  digitalWrite(2,HIGH);
-  digitalWrite(15,LOW);
- }
- else if (YN>=1830 && YN<=1750){
-  digitalWrite(15,LOW);
-  digitalWrite(2,LOW);
- }
- if (XN>=0 && XN<=1575){
-  digitalWrite(4,HIGH);
-  digitalWrite(16,LOW);
- }
- else if(XN>=1907 && XN<=4095){
- digitalWrite(16,HIGH);
- digitalWrite(4,LOW);
- }
- else if (YN>=1744 && YN<=1751){
-  digitalWrite(15,LOW);
-  digitalWrite(2,LOW);
- }
-if(SW==1)
- digitalWrite(17,HIGH);
-else{
-  digitalWrite(17,LOW);
-}
 }
